@@ -1,40 +1,91 @@
-// Menu.h
 #ifndef MENU_H
 #define MENU_H
 
 #include <iostream>
 #include <conio.h>
 #include <stdlib.h>
+#include <fstream>
+#include <string>
 
-inline int melhoresPontuacoes[5] = {0, 0, 0, 0, 0};
+struct Recorde {
+    std::string nome;
+    int pontuacao;
+    int tempo;
+};
 
-inline void atualizarPlacar(int novaPontuacao) {
+extern Recorde melhoresPlacares[5];
+
+inline void salvarPlacar() {
+    std::ofstream arquivo("placar.txt");
+    if(arquivo.is_open()) {
+        for(int i = 0; i < 5; i++) {
+            arquivo << melhoresPlacares[i].nome << " " 
+                    << melhoresPlacares[i].pontuacao << " " 
+                    << melhoresPlacares[i].tempo << "\n";
+        }
+        arquivo.close();
+    }
+}
+
+inline void carregarPlacar() {
+    std::ifstream arquivo("placar.txt");
+    if(arquivo.is_open()) {
+        for(int i = 0; i < 5; i++) {
+            arquivo >> melhoresPlacares[i].nome 
+                    >> melhoresPlacares[i].pontuacao 
+                    >> melhoresPlacares[i].tempo;
+        }
+        arquivo.close();
+    } else {
+        for(int i = 0; i < 5; i++) {
+            melhoresPlacares[i].nome = "Vazio";
+            melhoresPlacares[i].pontuacao = 0;
+            melhoresPlacares[i].tempo = 0;
+        }
+    }
+}
+
+// Agora recebe o nome pre-definido como parametro
+inline void atualizarPlacar(int novaPontuacao, int novoTempo, std::string nomeJogador) {
+    int posicao = -1;
+    
     for(int i = 0; i < 5; i++) {
-        if(novaPontuacao > melhoresPontuacoes[i]) {
-            for(int j = 4; j > i; j--) {
-                melhoresPontuacoes[j] = melhoresPontuacoes[j-1];
-            }
-            melhoresPontuacoes[i] = novaPontuacao;
+        if(novaPontuacao > melhoresPlacares[i].pontuacao) {
+            posicao = i;
             break;
         }
+    }
+    
+    if(posicao != -1) {
+        for(int j = 4; j > posicao; j--) {
+            melhoresPlacares[j] = melhoresPlacares[j-1];
+        }
+        
+        melhoresPlacares[posicao].nome = nomeJogador;
+        melhoresPlacares[posicao].pontuacao = novaPontuacao;
+        melhoresPlacares[posicao].tempo = novoTempo;
+        
+        salvarPlacar();
     }
 }
 
 inline void exibirPlacar() {
     system("cls");
-    std::cout << "=======================================\n";
-    std::cout << "          PLACAR DE LIDERANCA          \n";
-    std::cout << "=======================================\n\n";
+    std::cout << "=================================================\n";
+    std::cout << "               PLACAR DE LIDERANCA               \n";
+    std::cout << "=================================================\n\n";
     for(int i = 0; i < 5; i++) {
-        std::cout << "  " << i + 1 << " LUGAR: " << melhoresPontuacoes[i] << " pontos\n";
+        std::cout << "  " << i + 1 << " LUGAR: " << melhoresPlacares[i].nome 
+                  << " - " << melhoresPlacares[i].pontuacao << " pts"
+                  << " (" << melhoresPlacares[i].tempo << "s)\n";
     }
-    std::cout << "\n=======================================\n";
+    std::cout << "\n=================================================\n";
     std::cout << "Pressione qualquer tecla para voltar...";
     _getch();
 }
 
 inline void exibirMenu() {
-    system("cls"); 
+    system("cls");
     std::cout << "=======================================\n";
     std::cout << "             ROGUELIKE RPG             \n";
     std::cout << "=======================================\n\n";
@@ -48,12 +99,29 @@ inline void exibirMenu() {
     std::cout << "Escolha uma opcao: ";
 }
 
+inline int escolherDificuldade() {
+    system("cls");
+    std::cout << "=======================================\n";
+    std::cout << "        SELECIONE A DIFICULDADE        \n";
+    std::cout << "=======================================\n\n";
+    std::cout << "  [ 1 ] Facil\n";
+    std::cout << "  [ 2 ] Normal\n";
+    std::cout << "  [ 3 ] Dificil\n\n";
+    std::cout << "=======================================\n";
+    std::cout << "Escolha uma opcao: ";
+    
+    char op = _getch();
+    if(op == '1') return 0;
+    if(op == '3') return 2;
+    return 1; 
+}
+
 inline void mostrarInstrucoes(int opcao) {
     system("cls");
     if (opcao == 2) {
         std::cout << "-- COMO FUNCIONA --\n\n";
-        std::cout << "Mova-se com W, A, S, D. Aperte T para sair da partida.\n";
-        std::cout << "Aperte E para usar o Giro de Batalha (Ataque em Area).\n";
+        std::cout << "Mova-se com W, A, S, D. Aperte T para sair ou P para Pausar.\n";
+        std::cout << "Aperte E para usar a STOMPADA (Ataque em Area).\n";
         std::cout << "ATENCAO: O jogo e em tempo real! Inimigos movem sozinhos.\n";
         std::cout << "Voce deve sobreviver, derrotar inimigos e achar a saida (>).\n";
     } else if (opcao == 3) {
@@ -61,12 +129,18 @@ inline void mostrarInstrucoes(int opcao) {
         std::cout << "@ = Voce | # = Parede | . = Chao Livre | + = Porta Trancada\n";
         std::cout << "I = Inimigo | ^ = Armadilha | > = Saida para proxima fase\n";
         std::cout << "O = Ouro  | C = Chave  | P = Pocao de Vida\n";
-        std::cout << "W = Arma (Ganha Forca) | D = Escudo (Ganha Armadura)\n";
+        std::cout << "D = Arma (Ganha Dano) | A = Escudo (Ganha Armadura)\n";
+        std::cout << "V = Item Velocidade   | E = Item de Esquiva\n";
+        std::cout << "M = Item de Mira (Aumenta a chance de Acerto)\n";
+        std::cout << "L = NPC da Loja       | N = NPC da passagem secreta \n";
+        std::cout << "F = NPC misterioso    | G = NPC ajudante";
     } else if (opcao == 4) {
         std::cout << "-- PONTUACAO --\n\n";
         std::cout << "Cada Ouro (O) coletado da +10 pontos.\n";
         std::cout << "Derrotar inimigos da +50 pontos e Experiencia.\n";
         std::cout << "Escapar da masmorra inteira concede +500 pontos.\n";
+        std::cout << "Terminar o jogo rapido concede bonus de tempo!\n";
+        std::cout << "Jogar no DIFICIL aumenta sua pontuacao final em 50%.\n";
     }
     std::cout << "\n=======================================\n";
     std::cout << "Pressione qualquer tecla para voltar...";

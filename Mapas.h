@@ -118,7 +118,7 @@ void resetarMapa(int idMapa) {
                 mapa[y][x] = celula;
             }
             // TRUE PARA VISUALIZAR, FALSE PARA A JOGATINA REAL COM NEVOA DE GUERRA
-            mapaExplorado[y][x] = true; 
+            mapaExplorado[y][x] = false; 
         }
         mapa[y][MAP_COLUNAS] = '\0';
     }
