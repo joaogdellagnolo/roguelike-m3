@@ -4,15 +4,19 @@
 #include <limits>
 #include <string>
 #include <windows.h>
-#include <mmsystem.h> // Biblioteca para tocar som em segundo plano
+#include <mmsystem.h> 
 
 #define WIN32_LEAN_AND_MEAN
 
 #include "Personagens.h"
 #include "Mapas.h"
 #include "Menu.h"
-#include "Mecanicas.h"
 #include "Render.h"
+#include "Combate.h"
+#include "Bot.h"
+#include "NPCs.h"
+#include "Mecanicas.h"
+#include "Motor.h"
 
 using namespace std;
 
@@ -43,15 +47,22 @@ int main() {
         }
 
         if (opcaoMenu == 1) {
+            
+            bool modoBotAtivado = escolherModoDeJogo();
             int dificuldadeEscolhida = escolherDificuldade();
             
             system("cls");
             std::cout << "=======================================\n";
             std::cout << "          REGISTRO DA GUILDA           \n";
             std::cout << "=======================================\n\n";
-            std::cout << "Digite seu nome de jogador (sem espacos): ";
+            
             std::string nomeJogador;
-            std::cin >> nomeJogador;
+            if (modoBotAtivado) {
+                nomeJogador = "BOT_IA";
+            } else {
+                std::cout << "Digite seu nome de aventureiro (sem espacos): ";
+                std::cin >> nomeJogador;
+            }
             
             system("cls");
             cout << "=====================================================\n";
@@ -76,12 +87,10 @@ int main() {
             cout << "Pressione qualquer tecla para iniciar sua jornada...";
             _getch();
             
-            // Inicia a musica de fundo em loop
-            PlaySound(TEXT("musica.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            PlaySound(TEXT("musica.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP | SND_NODEFAULT);
             
-            iniciarPartida(dificuldadeEscolhida, nomeJogador);
+            iniciarPartida(dificuldadeEscolhida, nomeJogador, modoBotAtivado);
             
-            // Para a musica quando voltar para o menu
             PlaySound(NULL, 0, 0);
 
         } else if (opcaoMenu >= 2 && opcaoMenu <= 4) {
@@ -94,6 +103,5 @@ int main() {
     system("cls");
     return 0;
 }
-
 
 //g++ main.cpp -o roguelike.exe -lwinmm

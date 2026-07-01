@@ -45,26 +45,21 @@ inline void carregarPlacar() {
     }
 }
 
-// Agora recebe o nome pre-definido como parametro
 inline void atualizarPlacar(int novaPontuacao, int novoTempo, std::string nomeJogador) {
     int posicao = -1;
-    
     for(int i = 0; i < 5; i++) {
         if(novaPontuacao > melhoresPlacares[i].pontuacao) {
             posicao = i;
             break;
         }
     }
-    
     if(posicao != -1) {
         for(int j = 4; j > posicao; j--) {
             melhoresPlacares[j] = melhoresPlacares[j-1];
         }
-        
         melhoresPlacares[posicao].nome = nomeJogador;
         melhoresPlacares[posicao].pontuacao = novaPontuacao;
         melhoresPlacares[posicao].tempo = novoTempo;
-        
         salvarPlacar();
     }
 }
@@ -97,6 +92,22 @@ inline void exibirMenu() {
     std::cout << "  [ 6 ] Sair\n\n";
     std::cout << "=======================================\n";
     std::cout << "Escolha uma opcao: ";
+}
+
+// NOVA FUNCAO: ESCOLHER QUEM VAI JOGAR
+inline bool escolherModoDeJogo() {
+    system("cls");
+    std::cout << "=======================================\n";
+    std::cout << "           QUEM VAI JOGAR?             \n";
+    std::cout << "=======================================\n\n";
+    std::cout << "  [ 1 ] Jogador Manual\n";
+    std::cout << "  [ 2 ] Computador (Bot Inteligente)\n\n";
+    std::cout << "=======================================\n";
+    std::cout << "Escolha uma opcao: ";
+    
+    char op = _getch();
+    if(op == '2') return true; // Retorna true se for o Bot
+    return false; 
 }
 
 inline int escolherDificuldade() {
